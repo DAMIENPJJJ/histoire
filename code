@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marseille History Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #map {
+            height: 500px;
+            width: 80%;
+            margin: 20px auto;
+        }
+        #search {
+            padding: 10px;
+            width: 60%;
+            margin-bottom: 10px;
+        }
+        #history {
+            text-align: left;
+            width: 80%;
+            margin: 20px auto;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Carte Interactive des Lieux Historiques de Marseille</h1>
+    <input type="text" id="search" placeholder="Rechercher un lieu...">
+    <div id="map"></div>
+    <div id="history">Sélectionnez un lieu pour voir son histoire.</div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map').setView([43.2965, 5.3698], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        var lieux = [
+            { 
+                nom: "Vieux-Port", 
+                lat: 43.2951, 
+                lon: 5.3745, 
+                histoire: "Le Vieux-Port est le cœur historique de Marseille depuis l'Antiquité." 
+            },
+            { 
+                nom: "Basilique Notre-Dame de la Garde", 
+                lat: 43.2841, 
+                lon: 5.3713, 
+                histoire: "Cette basilique, construite au XIXe siècle, est un symbole de la ville." 
+            },
+            { 
+                nom: "Fort Saint-Jean", 
+                lat: 43.2946, 
+                lon: 5.3618, 
+                histoire: "Érigé au XVIIe siècle, ce fort protégeait Marseille des invasions." 
+            }
+        ];
+
+        var markers = [];
+        lieux.forEach(lieu => {
+            var marker = L.marker([lieu.lat, lieu.lon]).addTo(map)
+                .bindPopup(lieu.nom);
+            
+            marker.on("click", function() {
+                document.getElementById("history").innerHTML = `<h3>${lieu.nom}</h3><p>${lieu.histoire}</p>`;
+            });
+
+            markers.push(marker);
+        });
+
+        document.getElementById("search").addEventListener("input", function() {
+            var searchTerm = this.value.toLowerCase();
+            lieux.forEach(lieu => {
+                if (lieu.nom.toLowerCase().includes(searchTerm)) {
+                    map.setView([lieu.lat, lieu.lon], 15);
+                }
+            });
+        });
+
+        function calculerItineraire(depart, arrivee) {
+            var url = `https://www.google.com/maps/dir/?api=1&origin=${depart.lat},${depart.lon}&destination=${arrivee.lat},${arrivee.lon}`;
+            window.open(url, '_blank');
+        }
+
+        lieux.forEach((lieu, index) => {
+            markers[index].on("dblclick", function() {
+                var depart = lieux[0]; 
+                calculerItineraire(depart, lieu);
+            });
+        });
+    </script>
+</body>
+</html>
